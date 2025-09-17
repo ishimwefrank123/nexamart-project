@@ -1,8 +1,7 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import type { Request,Response } from 'express';
-import { userRoutes } from './routes/user.routes';
-
+import userRoutes from './routes/user.routes'
 const app = express()
 
 dotenv.config()
@@ -14,7 +13,7 @@ app.use(express.json());
 //Routes for User
 //Register
 
-app.use('/users', userRoutes)
+app.use('/api/users', userRoutes)
 
 
 app.get('/', (req:Request, res:Response)=>{
