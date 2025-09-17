@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcryptjs'
+import { userServices } from "../services/user.service";
 
 
 const prisma = new PrismaClient()
 export const userRegister = async(req: Request, res: Response) => {
- const {id,name,email,password,role,profileImage} = req.body
+ const {id,name,email,password,confirmPassword,role,profileImage} = req.body
  try {
 
   //validate the role
@@ -14,9 +15,7 @@ export const userRegister = async(req: Request, res: Response) => {
   }
 
   //check if user already existing
-  const existingUser = await prisma.user.findUnique({
-    where: {email}
-  });
+  const existingUser = await userServices.emailExits(email)
 
   if(existingUser){
     return res.status(500).json({
@@ -25,22 +24,23 @@ export const userRegister = async(req: Request, res: Response) => {
     })
   }
 
-  const hashedPassword = await bcrypt.hash(password,10)
+  //check if password is the similar
+  if(password !== confirmPassword){
+    return res.status(500).json({
+      success: false,
+      message: "Password and confirmation password do not match "
+    })
+  } 
+    const user = await userServices.createUser(name,email,password,role,profileImage)
 
-  const user = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password:hashedPassword,
-      role,
-      profileImage
-    }
-  })
-
-  res.status(400).json({
+    res.status(200).json({
     success: true,
-    message: user
+    message: "User registration successfully", 
+    user
   })
+
+  
+
 
  }catch(error: any){
   console.log("Error during creating user", error)

@@ -8,44 +8,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userRegister = void 0;
 const client_1 = require("@prisma/client");
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const user_service_1 = require("../services/user.service");
 const prisma = new client_1.PrismaClient();
 const userRegister = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, name, email, password, role, profileImage } = req.body;
+    const { id, name, email, password, confirmPassword, role, profileImage } = req.body;
     try {
         //validate the role
         if (!["buyer", "seller"].includes(role)) {
             return res.status(500).json({ error: "Invalid Role" });
         }
         //check if user already existing
-        const existingUser = yield prisma.user.findUnique({
-            where: { email }
-        });
+        const existingUser = yield user_service_1.userServices.emailExits(email);
         if (existingUser) {
             return res.status(500).json({
                 success: false,
                 message: "User Already exist",
             });
         }
-        const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
-        const user = yield prisma.user.create({
-            data: {
-                name,
-                email,
-                password: hashedPassword,
-                role,
-                profileImage
-            }
-        });
-        res.status(400).json({
+        //check if password is the similar
+        if (password !== confirmPassword) {
+            return res.status(500).json({
+                success: false,
+                message: "Password and confirmation password do not match "
+            });
+        }
+        const user = yield user_service_1.userServices.createUser(name, email, password, role, profileImage);
+        res.status(200).json({
             success: true,
-            message: user
+            message: "User registration successfully",
+            user
         });
     }
     catch (error) {
