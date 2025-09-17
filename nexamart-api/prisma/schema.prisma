@@ -7,6 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Product {
+  id              Int        @id        @default(autoincrement())
+  name            String
+  description     String
+  price           Float
+  stock_quantity  Int        @default(0)
+  category        Market
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  //Relationship with User(Seller)
+  seller      User   @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  sellerId    Int
+
+  @@map("products")
+}
+
 model User {
   id               Int       @id        @default(autoincrement())
   name             String
@@ -16,9 +33,23 @@ model User {
   profileImage     String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+
+  // Relation to Product(reverse relation)
+  products        Product[]  
+
+  @@map("users")
 }
 
 enum Role {
   buyer
   seller
+}
+
+enum Market {
+stock
+financial
+commodity
+special
+command
+forex
 }
