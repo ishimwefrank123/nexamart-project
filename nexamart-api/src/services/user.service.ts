@@ -2,6 +2,7 @@
 import { PrismaClient, type Role,  User } from '@prisma/client';
 import type { IUserCreateDTO, LoginResult, TUser } from "../interfaces/user.interfaces"
 import bcrypt from "bcryptjs"
+import { generateToken } from '../utils/jwt';
 
 const prisma = new PrismaClient()
 
@@ -55,6 +56,12 @@ const login = async (
       message: "Invalid email or password"
     }
   }
+
+  //use generateToken
+  const token = generateToken({
+    id: user.id, 
+    role: user.role,
+  })
   
   //return user without password
   const {password: _, ...safeUser} = user
@@ -62,6 +69,7 @@ const login = async (
   return {
     success: true,
     message: "Login successful",
+    token,
     user: safeUser
   }
 }
