@@ -54,3 +54,28 @@ export const userRegister = async(req: Request<{},{},TUser>, res: Response) => {
   res.status(500).json({message: error.message});
  }
 }
+
+export const userLogin = async(req: Request, res: Response) => {
+  const {email, password} = req.body;
+  try {
+    const result = await userServices.login(email, password);
+
+    if(!result.success){
+      return res.status(400).json(result);
+    }
+
+    res.status(200).json(result)
+    
+
+  }catch(err: unknown) {
+    if(err instanceof Error) {
+      console.error("Login error:", err.message);
+      return res.status(500).json({
+        message: err.message
+      });
+    }
+    return res.status(500).json({
+      message: "Unknown error"
+    })
+  }
+}

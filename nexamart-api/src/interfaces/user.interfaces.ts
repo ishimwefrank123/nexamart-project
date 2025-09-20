@@ -1,4 +1,4 @@
-import type { Role } from "@prisma/client";
+import type { Role, User } from "@prisma/client";
 
 export type TUser = {
   _id: number,
@@ -16,4 +16,11 @@ export interface IUserCreateDTO {
   password: string;
   role: Role;
   profileImage?: string | null;
+}
+
+export interface LoginResult {
+  success: boolean;
+  message: string;
+  token?: string;
+  user?: Partial<User>
 }
