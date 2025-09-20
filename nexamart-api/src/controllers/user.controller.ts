@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-import bcrypt from 'bcryptjs'
 import { userServices } from "../services/user.service";
-import type { TUser } from "../interfaces/user.interfaces";
+import type { LogoutResult, TUser } from "../interfaces/user.interfaces";
+import { addToBlacklist } from "../utils/tokenBlacklist";
 
-
-const prisma = new PrismaClient()
+const tokenBlackList = new  Set<string>();
 export const userRegister = async(req: Request<{},{},TUser>, res: Response) => {
  const {name,email,password,confirmPassword,role,profileImage} = req.body
  try {
@@ -78,4 +77,24 @@ export const userLogin = async(req: Request, res: Response) => {
       message: "Unknown error"
     })
   }
+}
+
+export const logout = (req: Request, res: Response<LogoutResult>) => {
+  const authHeader = req.headers.authorization;
+
+  if(!authHeader || !authHeader.startsWith("Bearer ")){
+    return res.status(400).json({
+      success:false,
+      message: "No token provided"
+    })
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  //Add token to blacklist
+  addToBlacklist(token);
+
+  return res.json({
+    success: true, message: "Logout successfull"
+  })
 }

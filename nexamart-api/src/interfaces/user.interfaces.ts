@@ -24,3 +24,8 @@ export interface LoginResult {
   token?: string;
   user?: Partial<User>
 }
+
+export interface LogoutResult {
+  success: boolean;
+  message: string;
+}
