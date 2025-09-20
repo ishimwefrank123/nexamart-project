@@ -14,14 +14,14 @@ const client_1 = require("@prisma/client");
 const user_service_1 = require("../services/user.service");
 const prisma = new client_1.PrismaClient();
 const userRegister = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, name, email, password, confirmPassword, role, profileImage } = req.body;
+    const { name, email, password, confirmPassword, role, profileImage } = req.body;
     try {
         //validate the role
         if (!["buyer", "seller"].includes(role)) {
             return res.status(500).json({ error: "Invalid Role" });
         }
         //check if user already existing
-        const existingUser = yield user_service_1.userServices.emailExits(email);
+        const existingUser = yield user_service_1.userServices.emailExists(email);
         if (existingUser) {
             return res.status(500).json({
                 success: false,
@@ -35,7 +35,13 @@ const userRegister = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 message: "Password and confirmation password do not match "
             });
         }
-        const user = yield user_service_1.userServices.createUser(name, email, password, role, profileImage);
+        const user = yield user_service_1.userServices.createUser({
+            name,
+            email,
+            password,
+            role,
+            profileImage
+        });
         res.status(200).json({
             success: true,
             message: "User registration successfully",

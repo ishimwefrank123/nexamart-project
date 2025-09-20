@@ -1,12 +1,16 @@
 
-import { PrismaClient, type Role } from '@prisma/client';
-import type { TUser } from "../interfaces/user.interfaces"
+import { PrismaClient, type Role, type User } from '@prisma/client';
+import type { IUserCreateDTO, TUser } from "../interfaces/user.interfaces"
 import bcrypt from "bcryptjs"
 
 const prisma = new PrismaClient()
 
-const createUser = async(name:string, email: string, password: string, role: Role, profileImage: string ) =>{
+const createUser = async(data: IUserCreateDTO): Promise<User> =>{
+  const {name,email,password,role,profileImage} = data
+
+  //hash password securely
   const hashedPassword = await bcrypt.hash(password,10);
+
   const user = await prisma.user.create({
     data: {
       name,
@@ -14,19 +18,19 @@ const createUser = async(name:string, email: string, password: string, role: Rol
       role,
       password: hashedPassword,
       profileImage
-    }
-  })
+    },
+  });
+  return user;
 }
 
-const emailExits = async(email: string) => {
+const emailExists = async(email: string): Promise<boolean> => {
   const user = await prisma.user.findUnique({
     where: {email}
   });
-
   return !!user;
 }
 
 export const userServices = {
   createUser,
-  emailExits
+  emailExists
 }

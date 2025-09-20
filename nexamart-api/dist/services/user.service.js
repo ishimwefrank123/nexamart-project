@@ -16,7 +16,9 @@ exports.userServices = void 0;
 const client_1 = require("@prisma/client");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma = new client_1.PrismaClient();
-const createUser = (name, email, password, role, profileImage) => __awaiter(void 0, void 0, void 0, function* () {
+const createUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    const { name, email, password, role, profileImage } = data;
+    //hash password securely
     const hashedPassword = yield bcryptjs_1.default.hash(password, 10);
     const user = yield prisma.user.create({
         data: {
@@ -25,10 +27,11 @@ const createUser = (name, email, password, role, profileImage) => __awaiter(void
             role,
             password: hashedPassword,
             profileImage
-        }
+        },
     });
+    return user;
 });
-const emailExits = (email) => __awaiter(void 0, void 0, void 0, function* () {
+const emailExists = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma.user.findUnique({
         where: { email }
     });
@@ -36,5 +39,5 @@ const emailExits = (email) => __awaiter(void 0, void 0, void 0, function* () {
 });
 exports.userServices = {
     createUser,
-    emailExits
+    emailExists
 };

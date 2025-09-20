@@ -2,11 +2,12 @@ import type { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from 'bcryptjs'
 import { userServices } from "../services/user.service";
+import type { TUser } from "../interfaces/user.interfaces";
 
 
 const prisma = new PrismaClient()
-export const userRegister = async(req: Request, res: Response) => {
- const {id,name,email,password,confirmPassword,role,profileImage} = req.body
+export const userRegister = async(req: Request<{},{},TUser>, res: Response) => {
+ const {name,email,password,confirmPassword,role,profileImage} = req.body
  try {
 
   //validate the role
@@ -15,7 +16,7 @@ export const userRegister = async(req: Request, res: Response) => {
   }
 
   //check if user already existing
-  const existingUser = await userServices.emailExits(email)
+  const existingUser = await userServices.emailExists(email);
 
   if(existingUser){
     return res.status(500).json({
@@ -31,7 +32,13 @@ export const userRegister = async(req: Request, res: Response) => {
       message: "Password and confirmation password do not match "
     })
   } 
-    const user = await userServices.createUser(name,email,password,role,profileImage)
+    const user = await userServices.createUser({
+      name,
+      email,
+      password,
+      role,
+      profileImage
+    });
 
     res.status(200).json({
     success: true,
